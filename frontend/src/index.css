@@ -1,0 +1,92 @@
+main {
+  max-width: 880px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: 2rem;
+}
+
+header {
+  margin-bottom: 1.5rem;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-toggle {
+  width: auto;
+  margin-bottom: 0;
+  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.lang-toggle {
+  width: auto;
+  margin-bottom: 0;
+  padding: 0.5rem 0.75rem;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.row-toggle {
+  width: auto;
+  margin-bottom: 0;
+  padding: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.error {
+  color: #b3261e;
+}
+
+.muted {
+  opacity: 0.7;
+}
+
+.url-cell {
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}
+
+td {
+  vertical-align: middle;
+}
+
+.created-cell span {
+  display: block;
+  white-space: nowrap;
+}
+
+.stats-panel {
+  padding-block: 0.75rem;
+}
+
+.stats-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.stats-scroll table {
+  margin-bottom: 0;
+}
+
+.stats-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--pico-card-background-color, var(--pico-background-color));
+}
