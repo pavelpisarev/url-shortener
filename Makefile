@@ -1,15 +1,22 @@
-.PHONY: help run build vet tidy migrate migrate-down frontend-install frontend-dev frontend-build
+COMPOSE = docker compose --env-file .env -f deploy/docker/docker-compose.yml
+
+.PHONY: help run build vet tidy migrate migrate-down frontend-install frontend-dev frontend-build compose-build compose-up compose-down compose-ps compose-logs
 
 help:
-	@echo "run            - run API"
-	@echo "build          - build api/migrate binaries"
-	@echo "vet            - go vet"
-	@echo "tidy           - go mod tidy"
-	@echo "migrate        - apply migrations"
-	@echo "migrate-down   - rollback migrations"
+	@echo "run              - run API"
+	@echo "build            - build api/migrate binaries"
+	@echo "vet              - go vet"
+	@echo "tidy             - go mod tidy"
+	@echo "migrate          - apply migrations"
+	@echo "migrate-down     - rollback migrations"
 	@echo "frontend-install - npm install"
-	@echo "frontend-dev   - vite dev server"
-	@echo "frontend-build - vite production build"
+	@echo "frontend-dev     - vite dev server"
+	@echo "frontend-build   - vite production build"
+	@echo "compose-build    - build backend image"
+	@echo "compose-up       - start whole stack"
+	@echo "compose-down     - stop whole stack"
+	@echo "compose-ps       - show compose status"
+	@echo "compose-logs     - follow compose logs"
 
 run:
 	go -C backend run ./cmd/api
@@ -38,3 +45,18 @@ frontend-dev:
 
 frontend-build:
 	npm --prefix frontend run build
+
+compose-build:
+	$(COMPOSE) build
+
+compose-up:
+	$(COMPOSE) up -d
+
+compose-down:
+	$(COMPOSE) down
+
+compose-ps:
+	$(COMPOSE) ps
+
+compose-logs:
+	$(COMPOSE) logs -f
