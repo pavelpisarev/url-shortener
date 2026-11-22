@@ -1,0 +1,25 @@
+import type { TranslationKey } from './en'
+
+export const ru: Record<TranslationKey, string> = {
+  subtitle: 'Сокращайте ссылки и смотрите статистику переходов.',
+  themeToLight: 'Включить светлую тему',
+  themeToDark: 'Включить тёмную тему',
+  langToggle: 'Переключить язык',
+  linkLabel: 'Ссылка',
+  linkPlaceholder: 'https://example.com/some/long/path',
+  submit: 'Сократить',
+  done: 'Готово:',
+  linksTitle: 'Ссылки',
+  emptyLinks: 'Пока нет ссылок.',
+  colCode: 'Код',
+  colDestination: 'Куда',
+  colCreated: 'Создана',
+  showStats: 'Статистика',
+  hideStats: 'Скрыть',
+  loading: 'Загрузка…',
+  totalClicks: 'Всего переходов:',
+  noClicks: 'Переходов пока нет.',
+  colDay: 'День',
+  colClicks: 'Переходы',
+  errorGeneric: 'Что-то пошло не так.',
+}

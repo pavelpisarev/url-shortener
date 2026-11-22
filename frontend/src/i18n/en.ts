@@ -1,0 +1,25 @@
+export const en = {
+  subtitle: 'Shorten links and track click statistics.',
+  themeToLight: 'Switch to light theme',
+  themeToDark: 'Switch to dark theme',
+  langToggle: 'Switch language',
+  linkLabel: 'Link',
+  linkPlaceholder: 'https://example.com/some/long/path',
+  submit: 'Shorten',
+  done: 'Done:',
+  linksTitle: 'Links',
+  emptyLinks: 'No links yet.',
+  colCode: 'Code',
+  colDestination: 'Destination',
+  colCreated: 'Created',
+  showStats: 'Stats',
+  hideStats: 'Hide',
+  loading: 'Loading…',
+  totalClicks: 'Total clicks:',
+  noClicks: 'No clicks yet.',
+  colDay: 'Day',
+  colClicks: 'Clicks',
+  errorGeneric: 'Something went wrong.',
+} as const
+
+export type TranslationKey = keyof typeof en
