@@ -1,4 +1,4 @@
-name: urlshortener
+name: url-shortener
 services:
   postgres:
     image: postgres:17
@@ -39,9 +39,9 @@ services:
 
   backend:
     build:
-      context: ../../backend
-      dockerfile: ../deploy/docker/backend/Dockerfile
-    image: urlshortener-backend:dev
+      context: ../backend
+      dockerfile: ../docker/backend/Dockerfile
+    image: url-shortener-backend:dev
     restart: unless-stopped
     environment:
       POSTGRES_HOST: postgres          # service name defined in docker-compose.yml
@@ -75,9 +75,9 @@ services:
 
   migrate:
     build:
-      context: ../../backend
-      dockerfile: ../deploy/docker/backend/Dockerfile
-    image: urlshortener-backend:dev
+      context: ../backend
+      dockerfile: ../docker/backend/Dockerfile
+    image: url-shortener-backend:dev
     command: ["/app/migrate"]
     environment:
       POSTGRES_HOST: postgres
@@ -95,9 +95,9 @@ services:
 
   frontend:
     build:
-      context: ../../frontend
-      dockerfile: ../deploy/docker/frontend/Dockerfile
-    image: urlshortener-frontend:dev
+      context: ../frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    image: url-shortener-frontend:dev
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]

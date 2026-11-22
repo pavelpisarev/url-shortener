@@ -1,32 +1,50 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React SPA for the URL shortener. It creates links, lists them, and expands per-link click statistics.
 
-Currently, two official plugins are available:
+The app talks to the backend through relative `/api` and `/r` paths, so both services share one origin and CORS is not needed.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- React 19, Vite 8, TypeScript
+- Pico CSS for classless styling
+- oxlint for linting
+- Vitest and Testing Library for tests
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Layout
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```text
+src/api.ts       backend client
+src/App.tsx      create form and link list
+src/LinkRow.tsx  link row with expandable statistics
+src/i18n/        en/ru dictionaries and provider
+src/test/        Vitest setup
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+The dev server proxies `/api` and `/r` to `http://localhost:8080` (see `vite.config.ts`), so the backend must be running.
+
+## Build
+
+```bash
+npm run build
+```
+
+This runs the TypeScript check and Vite build, and writes static files to `dist/`. The container serves them with nginx; the config is in `nginx.conf`.
+
+## Tests
+
+```bash
+npm test
+npm run lint
+```
+
+Tests cover the API client (success, JSON error, non-JSON error, code encoding) and App scenarios (list, empty state, link creation, error state).
+
+[Back to the root README](../README.md)

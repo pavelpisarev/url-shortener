@@ -1,4 +1,4 @@
-COMPOSE = docker compose --env-file .env -f deploy/docker/docker-compose.yml
+COMPOSE = docker compose --env-file .env -f docker/docker-compose.yml
 
 .PHONY: help run build vet tidy test frontend-test smoke migrate migrate-down frontend-install frontend-dev frontend-build compose-build compose-up compose-down compose-ps compose-logs
 
@@ -39,7 +39,7 @@ frontend-test:
 	npm --prefix frontend run test
 
 smoke:
-	bash deploy/scripts/smoke.sh
+	bash scripts/smoke.sh
 
 tidy:
 	go -C backend mod tidy
