@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	ErrNotFound    = errors.New("link not found")
-	ErrCodeExists  = errors.New("link code already exists")
+	ErrNotFound   = errors.New("link not found")
+	ErrCodeExists = errors.New("link code already exists")
 )
 
 type Link struct {

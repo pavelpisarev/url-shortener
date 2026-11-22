@@ -1,12 +1,15 @@
 COMPOSE = docker compose --env-file .env -f deploy/docker/docker-compose.yml
 
-.PHONY: help run build vet tidy migrate migrate-down frontend-install frontend-dev frontend-build compose-build compose-up compose-down compose-ps compose-logs
+.PHONY: help run build vet tidy test frontend-test smoke migrate migrate-down frontend-install frontend-dev frontend-build compose-build compose-up compose-down compose-ps compose-logs
 
 help:
 	@echo "run              - run API"
 	@echo "build            - build api/migrate binaries"
 	@echo "vet              - go vet"
 	@echo "tidy             - go mod tidy"
+	@echo "test             - go vet + unit tests with coverage"
+	@echo "frontend-test    - vitest"
+	@echo "smoke            - end-to-end check against running stack"
 	@echo "migrate          - apply migrations"
 	@echo "migrate-down     - rollback migrations"
 	@echo "frontend-install - npm install"
@@ -27,6 +30,16 @@ build:
 
 vet:
 	go -C backend vet ./...
+
+test:
+	go -C backend vet ./...
+	go -C backend test ./... -cover
+
+frontend-test:
+	npm --prefix frontend run test
+
+smoke:
+	bash deploy/scripts/smoke.sh
 
 tidy:
 	go -C backend mod tidy
