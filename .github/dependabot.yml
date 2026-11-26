@@ -1,0 +1,36 @@
+version: 2
+updates:
+  # Go modules used by the backend
+  - package-ecosystem: gomod
+    directory: /backend
+    schedule:
+      interval: weekly
+    # Cap open PRs so stuck updates do not pile up
+    open-pull-requests-limit: 3
+    # Routine bumps arrive as one PR; major versions stay separate for review
+    groups:
+      go-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # npm dependencies of the frontend
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # Actions pinned in .github/workflows are low risk and covered by CI,
+  # so they are grouped together, majors included
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]
