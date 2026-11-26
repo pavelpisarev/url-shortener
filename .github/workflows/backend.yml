@@ -1,0 +1,75 @@
+name: Backend CI
+
+"on":
+  # Runs only as a reusable workflow from root ci.yml, never triggered on its own
+  workflow_call: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    # The timeout is set here (a job with uses: rejects this field)
+    timeout-minutes: 10
+    # All run steps execute from backend/, so paths and commands need no prefix
+    # checkout/setup-go are unaffected: working-directory applies to run steps only
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Go module cache. cache-dependency-path is explicit because go.sum
+      # lives outside the repository root. A separate `go mod download` is
+      # redundant: setup-go restores the cache and vet/test fetch the rest
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: backend/go.mod
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      # gofmt -l only prints file names and exits 0,
+      # so the check is explicit: non-empty output fails the job.
+      - name: Format check
+        run: |
+          unformatted=$(gofmt -l .)
+          [ -z "$unformatted" ] || { echo "unformatted files:"; echo "$unformatted"; exit 1; }
+
+      # Static analysis with go vet
+      - name: Vet
+        run: go vet ./...
+
+      # -race works on ubuntu (cgo/gcc available), but not locally on Windows.
+      # -count=1 disables the go test result cache so the run is honest.
+      # -coverprofile merges coverage of all packages into one file for summary/artifact.
+      - name: Test
+        run: go test -race -count=1 -coverprofile=coverage.out ./...
+
+      # $GITHUB_STEP_SUMMARY is a markdown file rendered on the run page
+      # Append with >> so the summary of other steps is not overwritten
+      - name: Coverage summary
+        run: |
+          {
+            echo 'BACKEND COVERAGE SUMMARY'
+            echo '```'
+            go tool cover -func=coverage.out | tail -n 1
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Note: upload-artifact resolves path from the workspace root,
+      # not from working-directory, hence backend/coverage.out
+      - name: Upload coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-coverage
+          path: backend/coverage.out
+          if-no-files-found: error
+          retention-days: 7
+
+      # Compiles both binaries. Partly duplicates vet/test,
+      # but confirms cmd/api and cmd/migrate build for the image
+      - name: Build binaries
+        run: |
+          go build -o bin/api ./cmd/api
+          go build -o bin/migrate ./cmd/migrate
