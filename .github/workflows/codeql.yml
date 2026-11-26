@@ -1,0 +1,55 @@
+name: CodeQL
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+  # Weekly scan catches issues in code that has not changed since the last run
+  schedule:
+    - cron: '27 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Job-level permissions replace the top-level block, so repeat what is needed:
+    # security-events: write uploads results to the Security tab
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      # Both languages should report even if one fails
+      fail-fast: false
+      matrix:
+        language:
+          - go
+          - javascript-typescript
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Downloads the CodeQL CLI and creates the analysis database
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      # Compiles the Go code so CodeQL can analyze it (no-op for JavaScript/TypeScript)
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      # Runs the queries and uploads SARIF to code scanning
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: '/language:${{ matrix.language }}'
