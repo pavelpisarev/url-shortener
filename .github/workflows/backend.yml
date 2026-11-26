@@ -51,7 +51,7 @@ jobs:
       - name: Coverage summary
         run: |
           {
-            echo '=== BACKEND COVERAGE SUMMARY ==='
+            echo 'BACKEND COVERAGE SUMMARY'
             echo '```'
             go tool cover -func=coverage.out | tail -n 1
             echo '```'
