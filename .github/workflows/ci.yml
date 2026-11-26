@@ -1,0 +1,64 @@
+name: Root CI
+
+"on":
+  push:
+    branches:
+      - main
+    # Tags are needed by images/release jobs with "v*" tag
+    tags:
+      - 'v*'
+  pull_request:
+  # Manual run from the Actions tab (only appears after merge into main)
+  workflow_dispatch:
+
+# Minimal permissions by default
+permissions:
+  contents: read
+
+# One run per ref. A new push to a PR cancels the previous run,
+# while pushes to main and tags are not cancelled to avoid interrupting a release
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  backend:
+    name: Backend
+    uses: ./.github/workflows/backend.yml
+
+  frontend:
+    name: Frontend
+    uses: ./.github/workflows/frontend.yml
+
+  # End-to-end check against the real compose stack: builds both images,
+  # waits for migrations and verifies link creation, redirect and click stats
+  smoke:
+    name: Smoke
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    # Cold image builds dominate the runtime here
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Compose interpolates the root .env; it is gitignored, so copy the example
+      - name: Prepare env
+        run: cp .env.example .env
+
+      # No --wait: the migrate service is one-shot and would never be "running"
+      - name: Start stack
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d --build
+
+      # The script has its own readiness timeouts for frontend and backend
+      - name: Run smoke
+        run: bash scripts/smoke.sh
+
+      - name: Stack logs
+        if: failure()
+        run: docker compose --env-file .env -f docker/docker-compose.yml logs --tail=200
+
+      # Always tear down to free the runner; || true because the stack may not have started
+      - name: Stop stack
+        if: always()
+        run: docker compose --env-file .env -f docker/docker-compose.yml down -v || true
