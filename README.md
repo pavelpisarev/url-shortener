@@ -1,5 +1,9 @@
 # URL Shortener
 
+[![CI](https://github.com/pavelpisarev/url-shortener/actions/workflows/ci.yml/badge.svg)](https://github.com/pavelpisarev/url-shortener/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/pavelpisarev/url-shortener/actions/workflows/codeql.yml/badge.svg)](https://github.com/pavelpisarev/url-shortener/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/pavelpisarev/url-shortener)](https://github.com/pavelpisarev/url-shortener/releases)
+
 Portfolio pet project: a URL shortener with click analytics.
 
 ## Stack
@@ -35,6 +39,13 @@ make compose-up
 ```
 
 The app is available at <http://localhost:8080>. Stop it with `make compose-down`.
+
+Prebuilt images are published to GHCR on every release tag:
+
+```bash
+docker pull ghcr.io/pavelpisarev/url-shortener/backend:0.1.0
+docker pull ghcr.io/pavelpisarev/url-shortener/frontend:0.1.0
+```
 
 Local development without application containers:
 

@@ -176,10 +176,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Idempotent: re-running the job for an already released tag does not fail
+      # Idempotent: re-running the job for an already released tag does not fail.
+      # --notes is prepended to the notes generated with --generate-notes.
       - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          version="${GITHUB_REF_NAME#v}"
+          notes=$(printf '## Images\n\n```bash\ndocker pull ghcr.io/%s/backend:%s\ndocker pull ghcr.io/%s/frontend:%s\n```\n' \
+            "$GITHUB_REPOSITORY" "$version" "$GITHUB_REPOSITORY" "$version")
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
+            || gh release create "$GITHUB_REF_NAME" \
+                 --generate-notes \
+                 --verify-tag \
+                 --notes "$notes"
