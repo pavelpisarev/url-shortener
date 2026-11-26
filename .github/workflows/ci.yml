@@ -62,3 +62,124 @@ jobs:
       - name: Stop stack
         if: always()
         run: docker compose --env-file .env -f docker/docker-compose.yml down -v || true
+
+  # Builds and pushes the backend image to GHCR
+  # Skipped on pull requests: Dockerfiles are already validated by the smoke job
+  publish-backend:
+    name: Publish backend
+    needs: [backend]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Job-level permissions replace the top-level block, so contents is repeated
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # sha-short on every run, semver tags only when the ref is a v* tag
+      # No latest: an image should be traceable to a commit or a release
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}/backend
+          tags: |
+            type=sha,format=short,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # Context and file mirror docker/docker-compose.yml, where the context is ../backend
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          file: ./docker/backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+  # Builds and pushes the frontend image to GHCR
+  # Skipped on pull requests: Dockerfiles are already validated by the smoke job
+  publish-frontend:
+    name: Publish frontend
+    needs: [frontend]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}/frontend
+          tags: |
+            type=sha,format=short,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # Context and file mirror docker/docker-compose.yml, where the context is ../frontend
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          file: ./docker/frontend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  # Creates a GitHub Release once both images for a v* tag are published
+  # and the full stack passed smoke
+  release:
+    name: Release
+    needs: [publish-backend, publish-frontend, smoke]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Idempotent: re-running the job for an already released tag does not fail
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
